@@ -65,8 +65,8 @@ public class FisherPlace
         // Число генирурется в диапазоне от -Количество рыб в водоеме, до Количество рыб в водоёме
         // -Количество рыб в водоеме - необходимо чтобы был шанс не поймать рыбу
         Random rnd = new Random();
-        int fishIndex = rnd.Next(-(Pond.Fishes.Count/2), Pond.Fishes.Count);
-        if (fisherIndex >= 0)
+        int fishIndex = rnd.Next(0-(Pond.Fishes.Count), Pond.Fishes.Count);
+        if (fishIndex >= 0 )
         {
             Fish caughtFish = Pond.Fishes[fishIndex];
             Pond.Remove(caughtFish);

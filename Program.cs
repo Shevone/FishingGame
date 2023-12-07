@@ -16,6 +16,7 @@ static class Program
         bool exitFlag = false;
         while (!exitFlag)
         {
+            Console.Clear();
             // Выводим меню и считываем с консоли
             Console.WriteLine("Главное меню\n\n" +
                               "1 - Добавить рыбу\n" +
@@ -31,7 +32,7 @@ static class Program
             {
                 case "1":
                     // Создание рыбы
-                    message = "";
+                    message = CreateFish();
                     break;
                 case "2":
                     // Информация о рыбах
@@ -75,6 +76,7 @@ static class Program
          // Считываме номер и пытаемся перевести в число, если перевести не удастся, то вернем
          string readLine = Console.ReadLine() ?? "";
          bool parseResult = int.TryParse(readLine, out int index);
+         index -= 1;
          if (parseResult == false )
          {
              return "Вы ввели что то не то";
