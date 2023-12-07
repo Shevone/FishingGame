@@ -15,13 +15,13 @@ public class FisherPlace
 
     // ----------------------------------
     // Водоёмы
-    private Pond Pond;
+    private IPond<Fish> Pond;
     
     // ----------------------------------
 
     public FisherPlace()
     {
-        Pond = new Pond("Водоём");
+        Pond = new Pond<Fish>("Водоём");
         Fishes = new HashSet<Fish>();
         FisherMens = new List<FisherMan>();
     }
@@ -39,10 +39,7 @@ public class FisherPlace
         Fishes.Add(fish);
         
         // Добавляем в водоем то количество рыб, какое захотим
-        for (int i = 0; i < count; i++)
-        {
-            Pond.Add(fish);
-        }
+        Pond.Add(fish, count);
         
     }
     
@@ -65,10 +62,22 @@ public class FisherPlace
         // Число генирурется в диапазоне от -Количество рыб в водоеме, до Количество рыб в водоёме
         // -Количество рыб в водоеме - необходимо чтобы был шанс не поймать рыбу
         Random rnd = new Random();
-        int fishIndex = rnd.Next(0-(Pond.Fishes.Count), Pond.Fishes.Count);
-        if (fishIndex >= 0 )
+        int fishIndex = rnd.Next(0-(Pond.Count), Pond.Count);
+        
+        Fish caughtFish = null;
+        int i = 0;
+        // Пытаемся найти рыбу с таким индексом
+        foreach (Fish fish in Pond)
         {
-            Fish caughtFish = Pond.Fishes[fishIndex];
+            if (i == fishIndex)
+            {
+                caughtFish = fish;
+            }
+            i++;
+        }
+
+        if (caughtFish != null)
+        {
             Pond.Remove(caughtFish);
             fisherMan.CaughtFish(caughtFish);
 
@@ -102,7 +111,7 @@ public class FisherPlace
         // Записываем в словарь - рыба, количество в водоеме, а потом переводим в строку
         Dictionary<Fish, int> fishes1 = new Dictionary<Fish, int>();
         stringBuilder.Append($"Водоём 1 : {Pond.Name}, количество выловленных рыб {Pond.CaughtFish}\nРыбы в Водоёме 1\n");
-        foreach (Fish fish in Pond.Fishes)
+        foreach (Fish fish in Pond)
         {
             if (!fishes1.ContainsKey(fish))
             {
