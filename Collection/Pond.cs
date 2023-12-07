@@ -5,7 +5,7 @@ using FishingGame.Fishes;
 namespace FishingGame.Collection;
 
 // Класс - водоем
-public class Pond<T> : IPond<T> where T : Fish
+public class Pond<T> : IPondCovariance<T>, IPond<T> where T : Fish
 {
     // Список, хранящий рыб в водоёме
     private List<T> _fishes;
@@ -29,6 +29,7 @@ public class Pond<T> : IPond<T> where T : Fish
     // Например мы создадим Pond<PremiumFish> premiumPond = new(name);
     // И мы сможем засунуть этот объект в цикл foreach
     // foreach(PremiumFish fish in premiumPond)
+
     public IEnumerator<T> GetEnumerator()
     {
         return _fishes.GetEnumerator();
@@ -57,5 +58,29 @@ public class Pond<T> : IPond<T> where T : Fish
             return true;
         }
         return false;
+    }
+    
+    // --------------------------------------------
+    // Объявим ковариантные методы
+    public T[] ExampleMethod()
+    {
+        // Возвращает список рыб массивом
+        return _fishes.ToArray();
+    }
+
+    public T GetItem(int index)
+    {
+        // Возвращает элемент по индексу
+        int i = 0;
+        foreach (T fish in _fishes)
+        {
+            if (i == index)
+            {
+                return fish;
+            }
+            i++;
+        }
+
+        return null;
     }
 }
