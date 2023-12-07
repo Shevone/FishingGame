@@ -1,4 +1,5 @@
-﻿using FishingGame.Fishes;
+﻿using FishingGame.Collection;
+using FishingGame.Fishes;
 using FishingGame.Person;
 
 namespace FishingGame;
@@ -10,12 +11,16 @@ static class Program
     
     public static void Main(string[] args)
     {
+        Covariance();
+        Console.ReadKey();
+        // Метод демонстрации ковариантности
         // Вызовем метод чтоб заполнить данные
         FillPlace();
         
         bool exitFlag = false;
         while (!exitFlag)
         {
+            Console.Clear();
             // Выводим меню и считываем с консоли
             Console.WriteLine("Главное меню\n\n" +
                               "1 - Добавить рыбу\n" +
@@ -31,7 +36,7 @@ static class Program
             {
                 case "1":
                     // Создание рыбы
-                    message = "";
+                    message = CreateFish();
                     break;
                 case "2":
                     // Информация о рыбах
@@ -75,6 +80,7 @@ static class Program
          // Считываме номер и пытаемся перевести в число, если перевести не удастся, то вернем
          string readLine = Console.ReadLine() ?? "";
          bool parseResult = int.TryParse(readLine, out int index);
+         index -= 1;
          if (parseResult == false )
          {
              return "Вы ввели что то не то";
@@ -96,7 +102,12 @@ static class Program
              Console.WriteLine(message);
              Thread.Sleep(150);
          }
-         string fishResult = FisherPlace.DoFishing(index);
+         Console.WriteLine("\nВыберите тип водоема где хотите рыбачить\n" +
+                           "1- Бюджетный\n" +
+                           "2 - Стандартный\n" +
+                           "3 - Премиум\n");
+         string pondIndex = Console.ReadLine() ?? "";
+         string fishResult = FisherPlace.DoFishing(index,pondIndex);
          return fishResult;
     }
     // метод который обрабатывает элемент меню по созданию нового рыбака
@@ -203,5 +214,46 @@ static class Program
         FisherPlace.AddNewFish(cheapFish2, 7);
         FisherPlace.AddNewFish(cheapFish3, 13);
         FisherPlace.AddNewFish(premiumFish1, 2);
+    }
+
+    private static void Covariance()
+    {
+        // Создадим рыб
+        StandardFish standardFish1 = new StandardFish("Сом", 5, 14, false);
+        StandardFish standardFish2 = new StandardFish("Язь", 0.4, 10, false);
+        
+        // Создадим водоём
+        Pond<StandardFish> standardFishesPond = new Pond<StandardFish>("Стандарт");
+        
+        // Добавим туда рыб
+        standardFishesPond.Add(standardFish1, 2);
+        standardFishesPond.Add(standardFish2, 5);
+        
+        // --------------------------
+        // Теперь перейдем к демонстрации возможностей ковариантности
+        // Поместим наш объект типа Pond<StandardFish> под тип интерфейса
+        IPondCovariance<StandardFish> standardFishesInteface = standardFishesPond;
+        
+        // Продемонстрируем какой тип вернет сейчас ковариантный метод
+        StandardFish[] standardFishesArray = standardFishesInteface.ExampleMethod();
+        StandardFish standardFish = standardFishesInteface.GetItem(1);
+        Console.WriteLine(standardFish?.DisplayInfo());
+        
+        // Теперь приведем к более обобщенносму типу и покажем что верентся
+        IPondCovariance<Fish> fishes1 = standardFishesPond;
+        IPondCovariance<Fish> fishes = standardFishesInteface;
+        // StandardFish[] standardFishesArray2 = fishes.ExampleMethod(); Так не  получится тепепрь сделать
+        Fish[] fish = fishes.ExampleMethod(); // Теперь метод возращает болле обобщенный тип
+        Fish fish2 = fishes.GetItem(1);
+        Console.WriteLine(fish2?.DisplayInfo());
+        
+        // Вся суть в том, что мы можем присвоить более обобщенному типу IPondCovariance<Fish> объект боллее конктреного типа
+        // Pond<StandartFish> или IPondCovariance<StandardFish>
+        
+        // ЕЩЕ РАЗ САМОЕ ВАЖНОЕ
+        IPondCovariance<Fish> fishes2 = new Pond<StandardFish>("d");
+        IPondCovariance<StandardFish> standardFishes = new Pond<StandardFish>("a");
+        IPondCovariance<Fish> fishes3 = standardFishes;
+
     }
 }

@@ -4,7 +4,7 @@
 public abstract class Fish
 {
     // Название рыбы
-    private string _name;
+    public string Name { get; }
     
     // ----------------------------
     // Вес рыбы
@@ -44,7 +44,7 @@ public abstract class Fish
 
     public Fish(string name, double weight, double pricePerKilo)
     {
-        _name = name;
+        Name = name;
         Weight = weight;
         _pricePerKilo = pricePerKilo;
     }
@@ -52,6 +52,6 @@ public abstract class Fish
 
     public override string ToString()
     {
-        return $"Название : {_name}, Вес(кг.) : {Weight}, Цена за кг. : {PricePerKilo}";
+        return $"Название : {Name}, Вес(кг.) : {Weight}, Цена за кг. : {PricePerKilo}";
     }
 }

@@ -15,13 +15,18 @@ public class FisherPlace
 
     // ----------------------------------
     // Водоёмы
-    private Pond Pond;
-    
+    private IPond<CheapFish> CheapFishes;
+    private IPond<StandardFish> StandardFishes;
+    private IPond<PremiumFish> PremiumFishes;
+
     // ----------------------------------
 
     public FisherPlace()
     {
-        Pond = new Pond("Водоём");
+        CheapFishes = new Pond<CheapFish>("Недорогие рыбы");
+        StandardFishes = new Pond<StandardFish>("Cтандарт");
+        PremiumFishes = new Pond<PremiumFish>("Премиум");
+        
         Fishes = new HashSet<Fish>();
         FisherMens = new List<FisherMan>();
     }
@@ -39,11 +44,21 @@ public class FisherPlace
         Fishes.Add(fish);
         
         // Добавляем в водоем то количество рыб, какое захотим
-        for (int i = 0; i < count; i++)
+        // Нам приходит рыба с более обобщенным типом, мы смотрим, каким более конкретным типом она является и исходя из этого
+        // добавляем в новый класс
+        switch (fish)
         {
-            Pond.Add(fish);
+            // Пишем: <тип> <Если fish является этим типом то приводим и засовываем в переменную тут> 
+            case CheapFish cheapFish:
+                CheapFishes.Add(cheapFish, count);
+                break;
+            case StandardFish standardFish:
+                StandardFishes.Add(standardFish, count);
+                break;
+            case PremiumFish premiumFish:
+                PremiumFishes.Add(premiumFish, count);
+                break;
         }
-        
     }
     
     // Симулятор рыбалки
@@ -55,21 +70,57 @@ public class FisherPlace
         if (index < 0 || index >= FisherMens.Count) return false;
         return true;
     }
-    public string DoFishing(int fisherIndex)
+    public string DoFishing(int fisherIndex, string pondIndex)
     {
+        // Нам приходит индекс рыбака и индекс типа водоема
+        // В зависимости от индекса выбираем тот водоем в котором будут происходить рыбалка
         
         FisherMan fisherMan = FisherMens[fisherIndex];
-        
-        
+        string result;
+        switch (pondIndex)
+        {
+            case "1" :
+                // не дорогие
+                result = FishingExcute(CheapFishes, fisherMan);
+                break;
+            case "2" :
+                // средние
+                result = FishingExcute(StandardFishes, fisherMan);
+                break;
+            case "3" :
+                // ПРемиум
+                result = FishingExcute(PremiumFishes, fisherMan);
+                break;
+            default:
+                result = "Нет такого водоёма...";
+                break;
+        }
+
+        return result;
+    }
+    // Вынесли в отдельный обобщенный метод - то как производится рыбалка
+    // Это нужно чтобы у нас не было потворения кода, а мы могли просто передать необходимый нам водоём
+    private string FishingExcute<T>(IPond<T> pond, FisherMan fisherMan) where T : Fish
+    {
         // Генерируем рандомное число, чтобы мы могли собрать по индексу нашу рыбу
         // Число генирурется в диапазоне от -Количество рыб в водоеме, до Количество рыб в водоёме
         // -Количество рыб в водоеме - необходимо чтобы был шанс не поймать рыбу
         Random rnd = new Random();
-        int fishIndex = rnd.Next(-(Pond.Fishes.Count/2), Pond.Fishes.Count);
-        if (fisherIndex >= 0)
+        int fishIndex = rnd.Next(0-(pond.Count), pond.Count);
+        T caughtFish = null;
+        int i = 0;
+        // Пытаемся найти рыбу с таким индексом
+        foreach (T fish in pond)
         {
-            Fish caughtFish = Pond.Fishes[fishIndex];
-            Pond.Remove(caughtFish);
+            if (i == fishIndex)
+            {
+                caughtFish = fish;
+            }
+            i++;
+        }
+        if (caughtFish != null)
+        {
+            pond.Remove(caughtFish);
             fisherMan.CaughtFish(caughtFish);
 
             return $"Поймана рыба : \n{caughtFish.DisplayInfo()}";
@@ -95,14 +146,24 @@ public class FisherPlace
 
     public string PondInfo()
     {
-        // Информация о водоёмах
+        // Формируем информацию о каждом водоеме и выводим в сумме
+        string cheapInfo = CurPondInfo(CheapFishes, 1);
+        string standeartInfo = CurPondInfo(StandardFishes, 2);
+        string premiumInfo = CurPondInfo(PremiumFishes, 3);
+        return cheapInfo + standeartInfo + premiumInfo;
+
+    }
+    // Вынесли метод чтобы не было повторения кода
+    private string CurPondInfo<T>(IPond<T> pond, int numer) where T : Fish
+    {
+        // Информация о водоёме
         StringBuilder stringBuilder = new StringBuilder();
         
         // Первый водоем инфа
         // Записываем в словарь - рыба, количество в водоеме, а потом переводим в строку
-        Dictionary<Fish, int> fishes1 = new Dictionary<Fish, int>();
-        stringBuilder.Append($"Водоём 1 : {Pond.Name}, количество выловленных рыб {Pond.CaughtFish}\nРыбы в Водоёме 1\n");
-        foreach (Fish fish in Pond.Fishes)
+        Dictionary<T, int> fishes1 = new Dictionary<T, int>();
+        stringBuilder.Append($"Водоём {numer} : {pond.Name}, количество выловленных рыб {pond.CaughtFish}\nРыбы в Водоёме 1\n");
+        foreach (T fish in pond)
         {
             if (!fishes1.ContainsKey(fish))
             {
@@ -111,11 +172,12 @@ public class FisherPlace
             fishes1[fish]++;
         }
 
-        foreach (KeyValuePair<Fish,int> keyValuePair in fishes1)
+        foreach (KeyValuePair<T,int> keyValuePair in fishes1)
         {
             stringBuilder.Append(keyValuePair.Key + $" | Количество : {keyValuePair.Value} \n");
         }
 
+        stringBuilder.Append("\n\n");
         return stringBuilder.ToString();
     }
 
