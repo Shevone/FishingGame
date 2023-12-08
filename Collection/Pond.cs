@@ -15,6 +15,8 @@ public class Pond<T> : IPondCovariance<T>, IPond<T> where T : Fish
         _caughtFish = 0;
         Name = name;
     }
+
+    
     // ----------------------------------------------------------------------
     public string Name { get; }
 
@@ -59,7 +61,15 @@ public class Pond<T> : IPondCovariance<T>, IPond<T> where T : Fish
         }
         return false;
     }
-    
+    // Метод выполняющий сортировку
+    public void InvokeSort(Func<T, T, int> order)
+    {
+        // Тут нам поступает наш метод сравнения элементов.
+        // Его мы засовываем в стандартный метод сортировки. Теперь у нас соортирруются элементы
+        // По такому параметру который мы передали, и в таком порядке, какой мы сделаи
+        _fishes.Sort((fish1, fish2) => order(fish1, fish2));
+    }
+
     // --------------------------------------------
     // Объявим ковариантные методы
     public T[] ExampleMethod()

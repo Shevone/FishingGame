@@ -49,4 +49,9 @@ public class FisherMan
         stringBuilder.Append("---");
         return stringBuilder.ToString();
     }
+
+    public string FisherManNameSurname()
+    {
+        return $"Рыбак - {_passportData}";
+    }
 }
