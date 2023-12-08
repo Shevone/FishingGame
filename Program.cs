@@ -1,5 +1,6 @@
 ﻿using FishingGame.Collection;
 using FishingGame.Fishes;
+using FishingGame.Logging;
 using FishingGame.Person;
 
 namespace FishingGame;
@@ -17,6 +18,22 @@ static class Program
         // Вызовем метод чтоб заполнить данные
         FillPlace();
         
+        // ========================================================
+        // Создание логера и регистрация методов логирования
+
+        Logger logger = new Logger();
+        // Создаем класс - писатель в консоль
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        // Создаем класс - писатель в файл
+        FileHandler fileHandler = new FileHandler("Logging\\log.txt");
+        
+        // Добавляем в логгер методы печати
+        logger.AddHandler(consoleHandler.ConsoleLog);
+        logger.AddHandler(fileHandler.FileLog);
+        // ========================================================
+        
+        logger.LogMessage("\n-------------------------\n" +
+                          "Cтарт программы");
         bool exitFlag = false;
         while (!exitFlag)
         {
@@ -29,37 +46,52 @@ static class Program
                               "4 - Информация о рыбаках\n" +
                               "5 - Симулиорвать рыбалку\n" +
                               "6 - Информация о водоемах\n" +
-                              "7 - Выход\n");
+                              "7 - Сортировка\n" +
+                              "8 - Выход\n");
             string readLine = Console.ReadLine() ?? "";
             string message; // Сообщение, куда запишется результат текущей итерации
             switch (readLine)
             {
                 case "1":
                     // Создание рыбы
-                    message = CreateFish();
+                    message ="Создание новой рыбы: " + CreateFish();
                     break;
                 case "2":
                     // Информация о рыбах
-                    message = FisherPlace.FishesInfo();
+                    Console.WriteLine(FisherPlace.FishesInfo());
+                    message = "Произведен запрос на просмотр информации о рыбах";
                     break;
                 case "3":
                     // Новый рыбак
-                    message = CreateFisherMan();
+                    message = "Создание нового рыбака: " + CreateFisherMan();
                     break;
                 case "4":
                     // Информация о рыбаках
-                    message = FisherPlace.FisherMansInfo();
+                    Console.WriteLine(FisherPlace.FisherMansInfo());
+                    message = "Произведен запрос на просмотр информации о рыбах";
+
                     break;
                 case "5":
                     // Симулятор рыбалки
-                    message = Fishing();
+                    message =Fishing();
                     break;
                 case "6":
                     // Информация о водоемах
-                    message = FisherPlace.PondInfo();
+                    Console.WriteLine(FisherPlace.PondInfo());
+                    message = "Произведен запрос на просмотр информации о водоёмах";
                     break;
                 case "7":
-                    message = "Выход";
+                    // Сортировка
+                    Console.WriteLine("Выберите способ сортировки\n" +
+                                      "1 - по названиям рыб\n" +
+                                      "2 - по цене рыб за кг\n" +
+                                      "3 - по весу рыб\n");
+                    readLine = Console.ReadLine() ?? "";
+                    message = FisherPlace.SortFishesInPonds(readLine);
+                    break;
+                case "8":
+                    message = "Выход\n" +
+                              "-------------------------";
                     exitFlag = true;
                     break;
                 default:
@@ -67,8 +99,8 @@ static class Program
                     message = "Введено не корректное значение";
                     break;
             }
-            Console.WriteLine(message+"\n\nЧтобы продолжить нажмите любую клавишу\n");
-            Console.ReadKey();
+            // Вызываем метод класса логгер и логируем то что выполнили
+            logger.LogMessage(message);
         }
     }
     // Метод - вызывающий симуляцию рыбалки
@@ -89,6 +121,12 @@ static class Program
          {
              return "Нет такого рыбака";
          }
+         Console.WriteLine("\nВыберите тип водоема где хотите рыбачить\n" +
+                           "1- Бюджетный\n" +
+                           "2 - Стандартный\n" +
+                           "3 - Премиум\n");
+         string pondIndex = Console.ReadLine() ?? "1";
+        
          // красивенько рисуем
          string message = "Забрасываем удочку";
          for (int i = 0; i < 10; i++)
@@ -102,11 +140,7 @@ static class Program
              Console.WriteLine(message);
              Thread.Sleep(150);
          }
-         Console.WriteLine("\nВыберите тип водоема где хотите рыбачить\n" +
-                           "1- Бюджетный\n" +
-                           "2 - Стандартный\n" +
-                           "3 - Премиум\n");
-         string pondIndex = Console.ReadLine() ?? "";
+         
          string fishResult = FisherPlace.DoFishing(index,pondIndex);
          return fishResult;
     }
@@ -196,9 +230,10 @@ static class Program
         
         // Создадим рыб
         StandardFish standardFish1 = new StandardFish("Сом", 5, 14, false);
+        StandardFish standardFish4 = new StandardFish("Язь2", 1.1, 25, false);
         StandardFish standardFish2 = new StandardFish("Язь", 0.4, 10, false);
 
-        CheapFish cheapFish1 = new CheapFish("Карась", 1, 5);
+        CheapFish cheapFish1 = new CheapFish("Карась", 1.1, 5);
         CheapFish cheapFish2 = new CheapFish("Окунь", 0.2, 5);
         CheapFish cheapFish3 = new CheapFish("Плотва", 0.1, 5);
 
@@ -209,6 +244,7 @@ static class Program
         FisherPlace.AddNewFisherMen(fisherMan3);
         
         FisherPlace.AddNewFish(standardFish1, 5);
+        FisherPlace.AddNewFish(standardFish4,2);
         FisherPlace.AddNewFish(standardFish2, 5);
         FisherPlace.AddNewFish(cheapFish1, 10);
         FisherPlace.AddNewFish(cheapFish2, 7);

@@ -16,4 +16,7 @@ public interface IPond<T> : IEnumerable<T> where T : Fish
     public void Add(T fish, int count);
     // Метод удаления рыбы
     public bool Remove(T removingFish);
+    
+    // Метод сортировки
+    public void InvokeSort(Func<T,T,int> order);
 }

@@ -106,7 +106,7 @@ public class FisherPlace
         // Число генирурется в диапазоне от -Количество рыб в водоеме, до Количество рыб в водоёме
         // -Количество рыб в водоеме - необходимо чтобы был шанс не поймать рыбу
         Random rnd = new Random();
-        int fishIndex = rnd.Next(0-(pond.Count), pond.Count);
+        int fishIndex = rnd.Next(0-(pond.Count*2), pond.Count);
         T caughtFish = null;
         int i = 0;
         // Пытаемся найти рыбу с таким индексом
@@ -118,14 +118,15 @@ public class FisherPlace
             }
             i++;
         }
+        
         if (caughtFish != null)
         {
             pond.Remove(caughtFish);
             fisherMan.CaughtFish(caughtFish);
 
-            return $"Поймана рыба : \n{caughtFish.DisplayInfo()}";
+            return $"{fisherMan.FisherManNameSurname()}\n |  поймал : {caughtFish.DisplayInfo()}";
         }
-        return "Неудача ;(";
+        return $"{fisherMan.FisherManNameSurname()}\n | ничего не поймал(";
     }
     // ------------------------------------------------------------------------------------------
     // Ниже описаны методы, которые формируют текстовую информацию об объектах в нашем "рыбацком месте"
@@ -197,4 +198,50 @@ public class FisherPlace
 
         return stringBuilder.ToString();
     }
+    // -----------------------------------------------
+    // Ниже описан метод вызывающий сортировку
+     public string SortFishesInPonds(string typeSort)
+    {
+        // Func - делеагт( переменная которая хранит в себе метод)
+        
+        // Суть этого делегата в том, чтобы в перемнную func мы поместил метод,
+        // который сравнивает элементы типа Fish по какому - либо признаку
+
+        string message;
+        Func<Fish, Fish, int> orderFunc;
+
+        // В зависимости от того какой индекс был выбра, то записывамем в делеаг определенную анонимную функцию
+        // Метод Compare и CompareTo возращают int
+        // < 0 - когда второй больше первого
+        // == 0 когда одинкаовы
+        // > 0  когда первый больше второго
+        switch (typeSort)
+        {
+            case "1":
+                
+                orderFunc = (fish1, fish2) => String.Compare(fish1.Name, fish2.Name, StringComparison.Ordinal);
+                message = "Произведена сортировка по названиям";
+                break;
+            case "2":
+                
+                orderFunc = (fish1, fish2) => fish1.PricePerKilo.CompareTo(fish2.PricePerKilo);
+                message = "Произведена сортировка цене за кг";
+                break;
+           
+            case "3":
+                orderFunc = (fish1, fish2) => fish1.Weight.CompareTo(fish2.Weight);
+                message = "Произведена сортировка по весу";
+                break;
+            default:
+                return "Ничего не отсортированно";
+        }
+        // Передаем делегат сравнения в методы выполнения сортирвоки внутри коллекций
+        // То есть в метод сортировки, определенный в коллекции мы передаем то, как мы будем сравнитвать элемнты
+        // Перейдем в клас Pond
+        CheapFishes.InvokeSort(orderFunc);
+        StandardFishes.InvokeSort(orderFunc);
+        PremiumFishes.InvokeSort(orderFunc);
+        return message;
+    }
+    
 }
